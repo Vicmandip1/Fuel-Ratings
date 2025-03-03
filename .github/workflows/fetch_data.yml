@@ -1,4 +1,4 @@
-name: Fetch Latest Fuel Consumption Data
+name: Fetch & Merge Fuel Consumption Data
 
 on:
   schedule:
@@ -12,8 +12,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.GH_PAT }}
 
       - name: Set up Python
         uses: actions/setup-python@v3
@@ -21,7 +19,7 @@ jobs:
           python-version: "3.x"
 
       - name: Install dependencies
-        run: pip install requests
+        run: pip install requests pandas
 
       - name: Run fetch_data.py
         run: python fetch_data.py
@@ -30,7 +28,7 @@ jobs:
         run: |
           git config --global user.email "your-email@example.com"
           git config --global user.name "your-github-username"
-          git add data/
+          git add data/fuel_consumption_master.csv
           git add last_hash.txt
-          git commit -m "Auto-update: New fuel consumption data added" || echo "No changes to commit"
-          git push https://x-access-token:${{ secrets.GH_PAT }}@github.com/Vicmandip1/Fuel-Ratings.git main
+          git commit -m "Auto-update: Fuel consumption master file updated" || echo "No changes to commit"
+          git push
