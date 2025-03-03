@@ -76,13 +76,17 @@ def append_or_create_csv(records):
 
     df_new = pd.DataFrame(records, columns=COLUMN_HEADERS)
 
-    # Ensure master file exists with correct headers
-    if not os.path.exists(MASTER_FILE):
-        df_new.to_csv(MASTER_FILE, index=False)
-    else:
+    # If master file exists, append new data instead of overwriting
+    if os.path.exists(MASTER_FILE):
         df_old = pd.read_csv(MASTER_FILE)
+
+        # Append new data & remove duplicates
         df_combined = pd.concat([df_old, df_new]).drop_duplicates()
+
+        # Ensure the correct headers
         df_combined.to_csv(MASTER_FILE, index=False)
+    else:
+        df_new.to_csv(MASTER_FILE, index=False)
 
     print(f"Updated master file: {MASTER_FILE}")
 
@@ -95,3 +99,22 @@ def commit_and_push_changes():
     subprocess.run(["git", "add", LAST_HASH_FILE])
     subprocess.run(["git", "commit", "-m", "Updated fuel consumption master dataset"])
     subprocess.run(["git", "push"])
+
+def main():
+    """Main function to fetch and merge data"""
+    records = fetch_all_data()
+    if records:
+        new_hash = calculate_hash(records)
+        if has_data_changed(new_hash):
+            processed_records = process_records(records)
+            append_or_create_csv(processed_records)
+            commit_and_push_changes()
+            with open(LAST_HASH_FILE, "w") as file:
+                file.write(new_hash)
+        else:
+            print("No new updates found.")
+    else:
+        print("Failed to retrieve data.")
+
+if __name__ == "__main__":
+    main()
