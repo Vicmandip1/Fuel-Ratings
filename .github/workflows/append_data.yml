@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GH_PAT }}
 
       - name: Set up Python
         uses: actions/setup-python@v3
@@ -30,4 +32,4 @@ jobs:
           git config --global user.name "your-github-username"
           git add data/fuel_consumption_master.csv
           git commit -m "Auto-update: Fuel consumption master file updated" || echo "No changes to commit"
-          git push
+          git push https://x-access-token:${{ secrets.GH_PAT }}@github.com/Vicmandip1/Fuel-Ratings.git main
