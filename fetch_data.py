@@ -14,6 +14,14 @@ DATA_FOLDER = "data/"
 MASTER_FILE = os.path.join(DATA_FOLDER, "fuel_consumption_master.csv")
 LAST_HASH_FILE = "last_hash.txt"
 
+# Expected column headers based on provided structure
+COLUMN_HEADERS = [
+    "_id", "Model year", "Make", "Model", "Vehicle class",
+    "Engine size (L)", "Cylinders", "Transmission", "Fuel type",
+    "City (L/100 km)", "Highway (L/100 km)", "Combined (L/100 km)",
+    "Combined (mpg)", "CO2 emissions (g/km)", "CO2 rating", "Smog rating"
+]
+
 def fetch_all_data():
     """Fetch fuel consumption data from API"""
     response = requests.get(API_URL)
@@ -36,20 +44,46 @@ def has_data_changed(new_hash):
         return last_hash != new_hash
     return True  # Assume new if no previous record
 
+def process_records(records):
+    """Convert API response to match expected column structure"""
+    processed_data = []
+    for record in records:
+        row = [
+            record.get("_id", ""),
+            record.get("year", ""),
+            record.get("make", ""),
+            record.get("model", ""),
+            record.get("vehicle_class", ""),
+            record.get("engine_size", ""),
+            record.get("cylinders", ""),
+            record.get("transmission", ""),
+            record.get("fuel_type", ""),
+            record.get("city_l_100km", ""),
+            record.get("highway_l_100km", ""),
+            record.get("combined_l_100km", ""),
+            record.get("combined_mpg", ""),
+            record.get("co2_emissions_g_km", ""),
+            record.get("co2_rating", ""),
+            record.get("smog_rating", ""),
+        ]
+        processed_data.append(row)
+    return processed_data
+
 def append_or_create_csv(records):
     """Append new records to master CSV or create if missing"""
     if not os.path.exists(DATA_FOLDER):
         os.makedirs(DATA_FOLDER)
 
-    df_new = pd.DataFrame(records)
-    
-    if os.path.exists(MASTER_FILE):
+    df_new = pd.DataFrame(records, columns=COLUMN_HEADERS)
+
+    # Ensure master file exists with correct headers
+    if not os.path.exists(MASTER_FILE):
+        df_new.to_csv(MASTER_FILE, index=False)
+    else:
         df_old = pd.read_csv(MASTER_FILE)
         df_combined = pd.concat([df_old, df_new]).drop_duplicates()
-    else:
-        df_combined = df_new
+        df_combined.to_csv(MASTER_FILE, index=False)
 
-    df_combined.to_csv(MASTER_FILE, index=False)
     print(f"Updated master file: {MASTER_FILE}")
 
 def commit_and_push_changes():
@@ -57,24 +91,6 @@ def commit_and_push_changes():
     subprocess.run(["git", "config", "--global", "user.email", "your-email@example.com"])
     subprocess.run(["git", "config", "--global", "user.name", "your-github-username"])
 
-    subprocess.run(["git", "add", MASTER_FILE])
-    subprocess.run(["git", "commit", "-m", "Updated fuel consumption master dataset"])
-    subprocess.run(["git", "push"])
-
-def main():
-    """Main function to fetch and merge data"""
-    records = fetch_all_data()
-    if records:
-        new_hash = calculate_hash(records)
-        if has_data_changed(new_hash):
-            append_or_create_csv(records)
-            commit_and_push_changes()
-            with open(LAST_HASH_FILE, "w") as file:
-                file.write(new_hash)
-        else:
-            print("No new updates found.")
-    else:
-        print("Failed to retrieve data.")
-
-if __name__ == "__main__":
-    main()
+    subprocess.run(["git", "add", "data/fuel_consumption_master.csv"])
+    subprocess.run(["git", "add", LAST_HASH_FILE])
+    subprocess.run(["git", "commit", "-m", "Updated fuel consumption master
