@@ -1,12 +1,12 @@
-name: Fetch & Append Fuel Consumption Data
+name: Append New Fuel Consumption Data
 
 on:
   schedule:
-    - cron: "0 0 * * *"  # Runs every day at midnight UTC
+    - cron: "0 0 * * *"  # Runs daily at midnight UTC
   workflow_dispatch:  # Allows manual triggering
 
 jobs:
-  fetch_data:
+  fetch_new_data:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,8 +21,8 @@ jobs:
       - name: Install dependencies
         run: pip install requests pandas
 
-      - name: Fetch new updates
-        run: python fetch_data.py update
+      - name: Fetch and append new data
+        run: python append_new_data.py
 
       - name: Commit and push changes
         run: |
