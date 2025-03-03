@@ -9,6 +9,9 @@ API_URL = "https://open.canada.ca/data/en/api/3/action/datastore_search?resource
 DATA_FOLDER = "data/"
 MASTER_FILE = os.path.join(DATA_FOLDER, "fuel_consumption_master.csv")
 
+# Ensure the data folder exists
+os.makedirs(DATA_FOLDER, exist_ok=True)
+
 def fetch_new_data():
     """Fetch new data from API"""
     response = requests.get(API_URL)
@@ -23,20 +26,20 @@ def append_new_data(records):
     if records:
         new_df = pd.DataFrame(records)
 
-        # Load existing data
+        # Load existing data if available
         if os.path.exists(MASTER_FILE):
             existing_df = pd.read_csv(MASTER_FILE)
             combined_df = pd.concat([existing_df, new_df]).drop_duplicates()
         else:
-            combined_df = new_df
+            combined_df = new_df  # If master file does not exist, create it
 
         # Save the updated data
         combined_df.to_csv(MASTER_FILE, index=False, encoding="utf-8")
-        print(f"New data appended to {MASTER_FILE}")
+        print(f"\n✅ New data appended to {MASTER_FILE}")
     else:
-        print("No new data retrieved.")
+        print("❌ No new data retrieved.")
 
 if __name__ == "__main__":
-    print("Fetching new data...")
+    print("\n📢 Fetching new data...")
     records = fetch_new_data()
     append_new_data(records)
