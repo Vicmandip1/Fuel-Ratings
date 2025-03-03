@@ -21,6 +21,12 @@ jobs:
       - name: Install dependencies
         run: pip install requests pandas
 
+      - name: Ensure master file exists
+        run: |
+          mkdir -p data
+          touch data/fuel_consumption_master.csv
+          echo "_id,Model year,Make,Model,Vehicle class,Engine size (L),Cylinders,Transmission,Fuel type,City (L/100 km),Highway (L/100 km),Combined (L/100 km),Combined (mpg),CO2 emissions (g/km),CO2 rating,Smog rating" > data/fuel_consumption_master.csv
+
       - name: Run fetch_data.py
         run: python fetch_data.py
 
