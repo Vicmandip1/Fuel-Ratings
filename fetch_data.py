@@ -93,4 +93,5 @@ def commit_and_push_changes():
 
     subprocess.run(["git", "add", "data/fuel_consumption_master.csv"])
     subprocess.run(["git", "add", LAST_HASH_FILE])
-    subprocess.run(["git", "commit", "-m", "Updated fuel consumption master
+    subprocess.run(["git", "commit", "-m", "Updated fuel consumption master dataset"])
+    subprocess.run(["git", "push"])
